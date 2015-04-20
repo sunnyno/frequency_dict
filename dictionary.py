@@ -5,27 +5,29 @@ import xml.etree.cElementTree as ET
 import os
 import re
 import time
-from info import *
+from url_work import *
 
 work_file = 'info.txt'
+res_file = 'result.xml'
+doc ='/home/eugenia/PycharmProjects/l1/dict/docs.xml'
+f = open('info.txt', "a")
 
 
-def find_words():
-    if make_cofig():
-        get_url_info_inparallel()
-    else:
-        get_url_info()
 
-    if os.path.isfile(work_file):
-        print("work file " + work_file)
-    file = codecs.open(work_file, encoding='utf-8', mode='r')
+
+
+def find_words(work_f):
+
+    if os.path.isfile(work_f):
+        print("work file " + work_f)
+    file = codecs.open(work_f, encoding='utf-8', mode='r')
     txt = file.read()
     p = re.compile("([а-яА-ЯіІїЇЄє]+)".decode('utf-8'))
     return p.findall(txt)
 
 
-def create_dict():
-    res = find_words()
+def create_dict(work_file):
+    res = find_words(work_file)
     for key in res:
         if hobj.spell(key):
             key = hobj.stem(key)[0].decode('utf-8')
@@ -41,24 +43,26 @@ def create_dict():
     return sorted_keys
 
 
-def check_dict():
-    sorted_keys = create_dict()
-
+def check_dict(res_file, work_file):
+    sorted_keys = create_dict(work_file)
     root = ET.Element("words")
     for key in sorted_keys:
         ET.SubElement(root, "word", quantity=str(lsWord[key])).text = key
     tree = ET.ElementTree(root)
-    tree.write("result.xml")
-    print('Резуьтат записан: result.xml')
+    tree.write(res_file)
+    print('Резуьтат записан: ' + res_file)
 
 
 def working_time():
     start = time.time()
-    check_dict()
+    get_info(doc)
+    check_dict(res_file,work_file)
     finish = time.time()
-    return finish-start
+    print (finish-start)
 
 hobj = HS.HunSpell('/home/eugenia/AK/hunspell/uk_UA/uk_UA.dic',
                    '/home/eugenia/AK/hunspell/uk_UA/uk_UA.aff')
 lsWord = {}
-print ("Working time = " + str(working_time()))
+
+if __name__ == '__main__':
+    working_time()

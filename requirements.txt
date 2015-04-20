@@ -1,0 +1,12 @@
+1. xml.dom.minidom
+2. urllib2
+3. lxml; html
+4. gevent; monkey
+5. ConfigParser
+6. codecs
+7. hunspell
+8. xml.etree.cElementTree
+9. os
+10. re
+11. time
+12. unittest

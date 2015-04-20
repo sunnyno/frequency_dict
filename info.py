@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import urllib2
 from xml.dom.minidom import *
-import requests
 from lxml import html
 from gevent import monkey
 import gevent
@@ -21,21 +20,24 @@ def make_cofig():
     return conf.getboolean('Version', 'parallel')
 
 
-def get_url(url):
-    response = requests.get(url)
+def get_url(url, f):
+    response = urllib2.urlopen(url).read().decode('latin-1')
 # Преобразование тела документа в дерево элементов (DOM)
-    parsed_body = html.fromstring(response.text)
-    f.write("\n".join(parsed_body.xpath('//title/text()')).encode("utf-8"))
-    f.write("\n")
-    f.write("\n\n".join(parsed_body.xpath('//h2/text()')).encode("utf-8"))
-    f.write("\n".join(parsed_body.xpath('//p/text()')).encode("utf-8"))
-    f.write("\n")
+    parsed_body = html.document_fromstring(response)
+    if 'nashakazka' in str(url):
+        f.write("\n".join(parsed_body.xpath('//title/text()'))
+                .encode("iso8859-1"))
+        f.write("\n".join(parsed_body.xpath('//p/text()')).encode("iso8859-1"))
+    else:
+        f.write("\n".join(parsed_body.xpath('//title/text()')).encode("utf-8"))
+        f.write("\n")
+        f.write("\n\n".join(parsed_body.xpath('//h2/text()')).encode("utf-8"))
+        f.write("\n".join(parsed_body.xpath('//p/text()')).encode("utf-8"))
+        f.write("\n")
 
 
-
-def get_urls():
-
-    xml = parse('/home/eugenia/PycharmProjects/l1/dict/docs.xml')
+def get_urls(doc):
+    xml = parse(doc)
     url = xml.getElementsByTagName('url')
     urls = []
     for node in url:
@@ -43,15 +45,5 @@ def get_urls():
     return urls
 
 
-def get_url_info():
-    print ("sequential")
-    urls = get_urls()
-    for url in urls:
-        get_url(url)
 
 
-def get_url_info_inparallel():
-    print("parallel")
-    urls = get_urls()
-    jobs = [gevent.spawn(get_url, url) for url in urls]
-    gevent.joinall(jobs)
